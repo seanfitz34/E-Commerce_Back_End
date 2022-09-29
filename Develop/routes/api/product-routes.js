@@ -1,22 +1,48 @@
-const router = require('express').Router();
-const { Product, Category, Tag, ProductTag } = require('../../models');
+const router = require("express").Router();
+const { Product, Category, Tag, ProductTag } = require("../../models");
 
 // The `/api/products` endpoint
 
 // get all products
-router.get('/', (req, res) => {
+router.get("/", async (req, res) => {
+  try {
+    const allProducts = await Reader.findAll({
+      include: [{ model: Category }, { model: ProductTag }],
+    });
+    res.status(200).json(allProducts);
+  } catch (err) {
+    res.status(500).json(err);
+  }
   // find all products
   // be sure to include its associated Category and Tag data
 });
 
 // get one product
-router.get('/:id', (req, res) => {
+router.get("/:id", async (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
+  try {
+    const singleProduct = await Product.findByPk(req.params.id, {
+      include: [{ model: Category, through: Tag, as: product_id }],
+    });
+    if (!singleProduct) {
+      res.status(404).json({ message: "No product found by this ID!" });
+      return;
+    }
+    res.status(200).json(singleProduct);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
-
+// TODO left off here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // create new product
-router.post('/', (req, res) => {
+router.post("/", (req, res) => {
+  Product.create({
+    product_name: 
+    price: 
+    stock: 
+    category_id: 
+  })
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -48,7 +74,7 @@ router.post('/', (req, res) => {
 });
 
 // update product
-router.put('/:id', (req, res) => {
+router.put("/:id", (req, res) => {
   // update product data
   Product.update(req.body, {
     where: {
@@ -89,7 +115,7 @@ router.put('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete("/:id", (req, res) => {
   // delete one product by its `id` value
 });
 
