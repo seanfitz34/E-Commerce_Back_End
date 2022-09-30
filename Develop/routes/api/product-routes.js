@@ -21,18 +21,32 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
-  try {
-    const singleProduct = await Product.findByPk(req.params.id, {
-      include: [{ model: Category, through: Tag, as: product_id }],
+  Product.findOne({
+    where: {
+      id: req.params.id,
+    },
+    include: [
+      {
+        model: Category,
+        attributes: ["id", "category_name"],
+      },
+      {
+        model: Tag,
+        attributes: ["id", "tag_name"],
+      },
+    ],
+  })
+    .then((dbProductData) => {
+      if (!dbProductData) {
+        res.status(404).json({ message: "No product found with this id" });
+        return;
+      }
+      res.json(dbProductData);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
     });
-    if (!singleProduct) {
-      res.status(404).json({ message: "No product found by this ID!" });
-      return;
-    }
-    res.status(200).json(singleProduct);
-  } catch (err) {
-    res.status(500).json(err);
-  }
 });
 // TODO left off here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // create new product
@@ -41,8 +55,8 @@ router.post("/", (req, res) => {
     product_name: req.body.product_name,
     price: req.body.price,
     stock: req.body.stock,
-    category_id: req.body.category_id,-A
-  })
+    category_id: req.body.category_id,
+  });
   /* req.body should look like this...
     {
       product_name: "Basketball",
